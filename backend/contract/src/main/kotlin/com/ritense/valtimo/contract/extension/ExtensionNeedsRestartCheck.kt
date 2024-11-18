@@ -13,16 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.ritense.extension
 
-import org.springframework.boot.context.properties.ConfigurationProperties
-import java.net.URL
+package com.ritense.valtimo.contract.extension
 
-@ConfigurationProperties(prefix = "valtimo.extension")
-data class ExtensionProperties(
-    val repositories: Map<String, URL> = emptyMap(),
-    val multiInstanceCron: String = "0 0 * * * ?",
-) {
-
-    fun getExtensionRepositories() = repositories.map { ExtensionUpdateRepository(it.key, it.value) }
+interface ExtensionNeedsRestartCheck {
+    fun needsRestart(extensionClasses: List<Class<*>>): Boolean
 }

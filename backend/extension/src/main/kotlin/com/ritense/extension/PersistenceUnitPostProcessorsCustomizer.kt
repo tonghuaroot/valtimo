@@ -13,16 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.ritense.extension
 
-import org.springframework.boot.context.properties.ConfigurationProperties
-import java.net.URL
+import org.springframework.boot.autoconfigure.orm.jpa.EntityManagerFactoryBuilderCustomizer
+import org.springframework.boot.orm.jpa.EntityManagerFactoryBuilder
+import org.springframework.orm.jpa.persistenceunit.PersistenceUnitPostProcessor
 
-@ConfigurationProperties(prefix = "valtimo.extension")
-data class ExtensionProperties(
-    val repositories: Map<String, URL> = emptyMap(),
-    val multiInstanceCron: String = "0 0 * * * ?",
-) {
-
-    fun getExtensionRepositories() = repositories.map { ExtensionUpdateRepository(it.key, it.value) }
+class PersistenceUnitPostProcessorsCustomizer(
+    private val persistenceUnitPostProcessors: List<PersistenceUnitPostProcessor>
+): EntityManagerFactoryBuilderCustomizer {
+    override fun customize(builder: EntityManagerFactoryBuilder) {
+        builder.setPersistenceUnitPostProcessors(*persistenceUnitPostProcessors.toTypedArray())
+    }
 }
+
