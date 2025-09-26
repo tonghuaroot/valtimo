@@ -17,18 +17,12 @@
 package com.ritense.processlink
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.ritense.processlink.domain.AnotherTestImporter
 import com.ritense.processlink.domain.AnotherTestProcessLinkMapper
-import com.ritense.processlink.domain.AnotherTestSupportedProcessLinksHandler
-import com.ritense.processlink.domain.TestImporter
 import com.ritense.processlink.domain.TestProcessLinkMapper
-import com.ritense.processlink.domain.TestSupportedProcessLinksHandler
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.context.annotation.Bean
-import org.springframework.core.Ordered
-import org.springframework.core.annotation.Order
 
 @SpringBootApplication
 class TestApplication {
@@ -45,21 +39,6 @@ class TestApplication {
 
         @Bean
         fun anotherTestProcessLinkMapper(objectMapper: ObjectMapper) = AnotherTestProcessLinkMapper(objectMapper)
-
-        @Bean
-        fun testImporter() = TestImporter()
-
-        @Bean
-        fun anotherTestImporter() = AnotherTestImporter()
-
-
-        @Bean
-        @Order(Ordered.HIGHEST_PRECEDENCE)
-        fun testSupportedProcessLinksHandler() = TestSupportedProcessLinksHandler()
-
-        @Bean
-        @Order(Ordered.LOWEST_PRECEDENCE)
-        fun anotherTestSupportedProcessLinksHandler() = AnotherTestSupportedProcessLinksHandler()
 
     }
 }

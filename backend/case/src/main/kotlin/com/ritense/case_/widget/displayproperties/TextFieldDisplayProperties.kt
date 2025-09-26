@@ -20,6 +20,5 @@ import com.fasterxml.jackson.annotation.JsonTypeName
 
 @JsonTypeName("text")
 data class TextFieldDisplayProperties(
-    val ellipsisCharacterLimit: Int? = null,
-    override val hideWhenEmpty: Boolean? = false
+    val ellipsisCharacterLimit: Int? = null
 ) : FieldDisplayProperties

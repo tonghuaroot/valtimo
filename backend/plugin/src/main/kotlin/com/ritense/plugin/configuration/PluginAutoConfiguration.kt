@@ -22,6 +22,7 @@ import com.ritense.plugin.PluginDefinitionResolver
 import com.ritense.plugin.PluginDeploymentListener
 import com.ritense.plugin.PluginFactory
 import com.ritense.plugin.autodeployment.PluginAutoDeploymentEventListener
+import com.ritense.plugin.extension.ExtensionClassPluginDeployer
 import com.ritense.plugin.repository.PluginActionDefinitionRepository
 import com.ritense.plugin.repository.PluginActionPropertyDefinitionRepository
 import com.ritense.plugin.repository.PluginCategoryRepository
@@ -38,7 +39,6 @@ import com.ritense.plugin.service.PluginService
 import com.ritense.plugin.web.rest.PluginConfigurationResource
 import com.ritense.plugin.web.rest.PluginDefinitionResource
 import com.ritense.plugin.web.rest.converter.StringToActivityTypeConverter
-import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
 import com.ritense.valueresolver.ValueResolverService
 import jakarta.persistence.EntityManager
 import jakarta.validation.Validator
@@ -77,7 +77,8 @@ class PluginAutoConfiguration {
         pluginDefinitionRepository: PluginDefinitionRepository,
         pluginCategoryRepository: PluginCategoryRepository,
         pluginActionDefinitionRepository: PluginActionDefinitionRepository,
-        pluginActionPropertyDefinitionRepository: PluginActionPropertyDefinitionRepository
+        pluginActionPropertyDefinitionRepository: PluginActionPropertyDefinitionRepository,
+        pluginConfigurationRepository: PluginConfigurationRepository,
     ): PluginDeploymentListener {
         return PluginDeploymentListener(
             pluginDefinitionResolver,
@@ -85,7 +86,8 @@ class PluginAutoConfiguration {
             pluginDefinitionRepository,
             pluginCategoryRepository,
             pluginActionDefinitionRepository,
-            pluginActionPropertyDefinitionRepository
+            pluginActionPropertyDefinitionRepository,
+            pluginConfigurationRepository,
         )
     }
 
@@ -125,8 +127,7 @@ class PluginAutoConfiguration {
         validator: Validator,
         applicationEventPublisher: ApplicationEventPublisher,
         encryptionService: EncryptionService,
-        environment: Environment,
-        caseDefinitionChecker: CaseDefinitionChecker,
+        environment: Environment
     ): PluginService {
         return PluginService(
             pluginDefinitionRepository,
@@ -141,7 +142,6 @@ class PluginAutoConfiguration {
             applicationEventPublisher,
             encryptionService,
             environment,
-            caseDefinitionChecker,
         )
     }
 
@@ -193,14 +193,12 @@ class PluginAutoConfiguration {
     fun pluginAutoDeploymentEventListener(
         objectMapper: ObjectMapper,
         pluginService: PluginService,
-        resourceLoader: ResourceLoader,
-        eventPublisher: ApplicationEventPublisher
+        resourceLoader: ResourceLoader
     ): PluginAutoDeploymentEventListener{
         return PluginAutoDeploymentEventListener(
             pluginService = pluginService,
             objectMapper = objectMapper,
-            resourceLoader = resourceLoader,
-            eventPublisher =  eventPublisher
+            resourceLoader = resourceLoader
         )
     }
 
@@ -210,5 +208,13 @@ class PluginAutoConfiguration {
         pluginProcessLinkRepository: PluginProcessLinkRepository,
     ): PluginConfigurationListener {
         return PluginConfigurationListener(pluginConfigurationRepository, pluginProcessLinkRepository)
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(ExtensionClassPluginDeployer::class)
+    fun extensionPluginDeployer(
+        pluginDeploymentListener: PluginDeploymentListener
+    ): ExtensionClassPluginDeployer {
+        return ExtensionClassPluginDeployer(pluginDeploymentListener)
     }
 }

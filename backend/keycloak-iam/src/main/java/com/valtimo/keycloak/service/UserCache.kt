@@ -29,8 +29,4 @@ enum class CacheType(
 ) {
     EMAIL(ManageableUser::class),
     USER_IDENTIFIER(ValtimoUser::class);
-
-    fun getCacheName(): String {
-        return "${name}_${cachedClass.simpleName}"
-    }
 }

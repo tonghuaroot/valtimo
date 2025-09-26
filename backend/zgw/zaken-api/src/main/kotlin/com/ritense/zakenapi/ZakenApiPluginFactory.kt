@@ -27,7 +27,7 @@ import com.ritense.zakenapi.repository.ZaakInstanceLinkRepository
 import org.springframework.transaction.PlatformTransactionManager
 
 class ZakenApiPluginFactory(
-    pluginService: PluginService,
+    private val pluginService: PluginService,
     private val client: ZakenApiClient,
     private val zaakUrlProvider: ZaakUrlProvider,
     private val storageService: TemporaryResourceStorageService,

@@ -16,20 +16,14 @@
 
 package com.ritense.resource.service
 
-import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.resource.domain.MetadataType
-import com.ritense.temporaryresource.domain.ResourceStorageMetadata
-import com.ritense.temporaryresource.domain.ResourceStorageMetadataId
-import com.ritense.temporaryresource.domain.StorageMetadataKeys
-import com.ritense.temporaryresource.domain.getEnumFromKey
 import com.ritense.temporaryresource.repository.ResourceStorageMetadataRepository
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.upload.MimeTypeDeniedException
 import com.ritense.valtimo.contract.upload.ValtimoUploadProperties
-import io.github.oshai.kotlinlogging.KotlinLogging
+import mu.KotlinLogging
 import org.apache.tika.Tika
-import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import java.io.BufferedInputStream
 import java.io.InputStream
@@ -44,6 +38,9 @@ import kotlin.io.path.nameWithoutExtension
 import kotlin.io.path.notExists
 import kotlin.io.path.pathString
 import kotlin.io.path.readText
+import com.fasterxml.jackson.module.kotlin.readValue
+import com.ritense.temporaryresource.domain.ResourceStorageMetadataId
+import com.ritense.temporaryresource.domain.StorageMetadataKeys
 
 @Service
 @SkipComponentScan
@@ -64,7 +61,7 @@ class TemporaryResourceStorageService(
         logger.info { "Using the following path for temporary file resources: '$tempDir'" }
     }
 
-    fun store(inputStream: InputStream, metadata: Map<String, Any> = emptyMap()): String {
+    fun store(inputStream: InputStream, metadata: Map<String, Any?> = emptyMap()): String {
         val dataFile = BufferedInputStream(inputStream).use { bis ->
             if (uploadProperties.acceptedMimeTypes.isNotEmpty()) {
                 //Tika marks the stream, reads the first few bytes and resets it when done.
@@ -84,7 +81,7 @@ class TemporaryResourceStorageService(
             MetadataType.FILE_SIZE.key to dataFile.fileSize().toString()
         )
         val metaDataFile = Files.createTempFile(tempDir, "${random.nextLong().toULong()}-", ".json")
-        writeMetaDataFile(metaDataFile, metaDataContent)
+        metaDataFile.toFile().writeText(objectMapper.writeValueAsString(metaDataContent))
 
         return metaDataFile.nameWithoutExtension
     }
@@ -98,7 +95,7 @@ class TemporaryResourceStorageService(
         val metaDataFile = getMetaDataFileFromResourceId(id)
         require(!metaDataFile.notExists()) { "No resource found with id '$id'" }
 
-        val originalMetaData = getMetadataFromFile(metaDataFile, false)
+        val originalMetaData = getMetadataFromFile(id, false)
         // Since the metadata does not allow null values, this code removes the key when the value is null
         val newMetaData = (originalMetaData + metaData)
             .mapNotNull { (key, value) -> if (value != null) Pair(key, value) else null }
@@ -116,8 +113,7 @@ class TemporaryResourceStorageService(
         if (metaDataFile.notExists()) {
             return false
         }
-        val typeRef = object : TypeReference<Map<String, Any>>() {}
-        val metadata = objectMapper.readValue(metaDataFile.readText(), typeRef)
+        val metadata = objectMapper.readValue<Map<String, Any>>(metaDataFile.readText())
         val dataFile = Path(metadata[MetadataType.FILE_PATH.key] as String)
         val deleted = Files.deleteIfExists(dataFile)
         Files.deleteIfExists(metaDataFile)
@@ -125,66 +121,48 @@ class TemporaryResourceStorageService(
     }
 
     fun getResourceContentAsInputStream(id: String): InputStream {
-        val metadata = getResourceMetadata(id, false)
-        val dataFile = Path(metadata[MetadataType.FILE_PATH.key] as String)
-        return dataFile.inputStream()
+        return Path(getMetadataFilePath(id)).inputStream()
+    }
+
+    fun getMetadataValue(id: String, key: String): Any? {
+        val metadataKey = StorageMetadataKeys.entries.find { it.key == key }
+        if (metadataKey != null) {
+            return repository.getReferenceById(
+                ResourceStorageMetadataId(
+                    fileId = id,
+                    metadataKey = metadataKey
+                )
+            ).metadataValue
+        }
+
+        return getMetadataFromFile(id)[key]
     }
 
     fun getResourceMetadata(id: String): Map<String, Any> {
-        return getResourceMetadata(id, true)
+        return repository.getResourceStorageMetadataByIdFileId(id)
+            .associate { it.id.metadataKey.key to it.metadataValue } +
+            getMetadataFromFile(id)
     }
 
-    internal fun getResourceMetadata(id: String, filterPath: Boolean): Map<String, Any> {
+    internal fun getMetadataFromFile(id: String, filterPath: Boolean = true): Map<String, Any> {
+        val metaDataFile = getMetaDataFileFromResourceId(id)
+        if (metaDataFile.notExists()) {
+            return emptyMap()
+        }
+        return objectMapper.readValue<Map<String, Any>>(metaDataFile.readText())
+            .filter { !filterPath || it.key != MetadataType.FILE_PATH.key }
+    }
+
+    internal fun getMetadataFilePath(id: String): String {
         val metaDataFile = getMetaDataFileFromResourceId(id)
         require(!metaDataFile.notExists()) { "No resource found with id '$id'" }
-
-        return getMetadataFromFile(metaDataFile, filterPath)
+        val metadata = objectMapper.readValue<Map<String, Any>>(metaDataFile.readText())
+        return metadata[MetadataType.FILE_PATH.key] as String
     }
 
     internal fun getMetaDataFileFromResourceId(resourceId: String): Path {
         val safeFileName = Path("$resourceId.json").fileName.toString()
         return Path.of(tempDir.pathString, safeFileName)
-    }
-
-    internal fun getMetadataFromFile(metaDataFile: Path, filterPath: Boolean): Map<String, Any> {
-        val typeRef = object : TypeReference<Map<String, Any>>() {}
-        return objectMapper.readValue(metaDataFile.readText(), typeRef)
-            .filter {
-                !filterPath || it.key != MetadataType.FILE_PATH.key
-            }
-    }
-
-    fun getMetadataValue(resourceStorageFieldId: String, metadataKey: String): String {
-        return getEnumFromKey(metadataKey).fold(
-            onSuccess = { enumKey ->
-                getMetadataValueOrNull(resourceStorageFieldId, enumKey)
-                    ?: throw IllegalStateException("Resource $resourceStorageFieldId does not exist")
-            },
-            onFailure = { exception ->
-                throw IllegalStateException("Failed to resolve metadata key '$metadataKey'", exception)
-            }
-        )
-    }
-
-    fun getMetadataValueOrNull(resourceStorageFieldId: String, metadataKey: StorageMetadataKeys): String? {
-        return repository.findByIdOrNull(
-            ResourceStorageMetadataId(
-                fileId = resourceStorageFieldId,
-                metadataKey = metadataKey
-            )
-        )?.metadataValue
-    }
-
-    fun saveMetadataValue(resourceStorageFieldId: String, metadataKey: StorageMetadataKeys, metadataValue: String?) {
-        repository.save(
-            ResourceStorageMetadata(
-                id = ResourceStorageMetadataId(
-                    fileId = resourceStorageFieldId,
-                    metadataKey = metadataKey
-                ),
-                metadataValue = metadataValue,
-            )
-        )
     }
 
     companion object {

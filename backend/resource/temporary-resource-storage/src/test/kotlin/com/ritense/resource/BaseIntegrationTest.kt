@@ -16,11 +16,16 @@
 
 package com.ritense.resource
 
+import com.ritense.temporaryresource.repository.ResourceStorageMetadataRepository
 import org.junit.jupiter.api.Tag
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.boot.test.mock.mockito.MockBean
 
 @SpringBootTest
 @Tag("integration")
 abstract class BaseIntegrationTest {
+
+    @MockBean
+    lateinit var resourceStorageMetadataRepository: ResourceStorageMetadataRepository
 
 }

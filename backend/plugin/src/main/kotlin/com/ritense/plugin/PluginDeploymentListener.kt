@@ -29,30 +29,59 @@ import com.ritense.plugin.exception.PluginDefinitionNotDeployedException
 import com.ritense.plugin.repository.PluginActionDefinitionRepository
 import com.ritense.plugin.repository.PluginActionPropertyDefinitionRepository
 import com.ritense.plugin.repository.PluginCategoryRepository
+import com.ritense.plugin.repository.PluginConfigurationRepository
 import com.ritense.plugin.repository.PluginDefinitionRepository
-import io.github.oshai.kotlinlogging.KotlinLogging
+import com.ritense.valtimo.contract.annotation.SkipComponentScan
+import mu.KotlinLogging
 import org.springframework.boot.context.event.ApplicationStartedEvent
 import org.springframework.context.event.EventListener
+import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
 import java.lang.reflect.Field
 import java.lang.reflect.Method
 import java.lang.reflect.Parameter
 import com.ritense.plugin.annotation.PluginProperty as PluginPropertyAnnotation
 
-open class PluginDeploymentListener(
+@SkipComponentScan
+@Component
+class PluginDeploymentListener(
     private val pluginDefinitionResolver: PluginDefinitionResolver,
     private val pluginCategoryResolver: PluginCategoryResolver,
     private val pluginDefinitionRepository: PluginDefinitionRepository,
     private val pluginCategoryRepository: PluginCategoryRepository,
     private val pluginActionDefinitionRepository: PluginActionDefinitionRepository,
-    private val pluginActionPropertyDefinitionRepository: PluginActionPropertyDefinitionRepository
+    private val pluginActionPropertyDefinitionRepository: PluginActionPropertyDefinitionRepository,
+    private val pluginConfigurationRepository: PluginConfigurationRepository,
 ) {
 
     @Transactional
     @EventListener(ApplicationStartedEvent::class)
-    open fun deployPlugins() {
+    fun deployPlugins() {
         deployPluginCategories()
         deployPluginDefinitions()
+    }
+
+    fun deployPluginDefinition(clazz: Class<*>, pluginAnnotation: Plugin) {
+        try {
+            logger.info { "Deploying plugin definition '${pluginAnnotation.key}'" }
+            val deployedPluginDefinition = createPluginDefinition(clazz, pluginAnnotation)
+
+            createActionDefinition(deployedPluginDefinition, clazz)
+
+        } catch (e: Exception) {
+            throw PluginDefinitionNotDeployedException(pluginAnnotation.key, clazz.name, e)
+        }
+    }
+
+    fun undeployPluginDefinition(clazz: Class<*>, pluginAnnotation: Plugin) {
+        logger.info { "Undeploy plugin definition '${pluginAnnotation.key}'" }
+        pluginConfigurationRepository.deleteAll(
+            pluginConfigurationRepository.findByPluginDefinitionKey(pluginAnnotation.key)
+        )
+        pluginActionDefinitionRepository.deleteAll(
+            pluginActionDefinitionRepository.findByIdPluginDefinitionKey(pluginAnnotation.key)
+        )
+        pluginDefinitionRepository.deleteById(pluginAnnotation.key)
     }
 
     private fun deployPluginCategories() {
@@ -96,14 +125,7 @@ open class PluginDeploymentListener(
         val classes = findPluginClasses()
 
         classes.forEach { (clazz, pluginAnnotation) ->
-            try {
-                val deployedPluginDefinition = createPluginDefinition(clazz, pluginAnnotation)
-
-                createActionDefinition(deployedPluginDefinition, clazz)
-
-            } catch (e: Exception) {
-                throw PluginDefinitionNotDeployedException(pluginAnnotation.key, clazz.name, e)
-            }
+            deployPluginDefinition(clazz, pluginAnnotation)
         }
     }
 
@@ -114,14 +136,13 @@ open class PluginDeploymentListener(
             pluginAnnotation.description,
             clazz.name,
             mutableSetOf(),
-            mutableSetOf(),
             mutableSetOf()
         )
 
         linkCategories(pluginDefinition, clazz)
         createProperties(pluginDefinition, clazz)
 
-        return deployPluginDefinition(pluginDefinition)
+        return savePluginDefinition(pluginDefinition)
     }
 
     private fun linkCategories(pluginDefinition: PluginDefinition, clazz: Class<*>) {
@@ -153,23 +174,21 @@ open class PluginDeploymentListener(
     private fun createActionDefinition(deployedPluginDefinition: PluginDefinition, clazz: Class<*>) {
         findPluginActions(clazz)
             .forEach { (method, actionAnnotation) ->
-                val actionDefinition = PluginActionDefinition(
-                    PluginActionDefinitionId(
-                        actionAnnotation.key,
-                        deployedPluginDefinition
-                    ),
-                    actionAnnotation.title,
-                    actionAnnotation.description,
-                    method.name,
-                    actionAnnotation.activityTypes.toList()
+                val actionDefinition = saveActionDefinition(
+                    PluginActionDefinition(
+                        PluginActionDefinitionId(
+                            actionAnnotation.key,
+                            deployedPluginDefinition
+                        ),
+                        actionAnnotation.title,
+                        actionAnnotation.description,
+                        method.name,
+                        actionAnnotation.activityTypes.toList()
+                    )
                 )
-
-                deployActionDefinition(actionDefinition)
-                (deployedPluginDefinition.actions as MutableSet).add(actionDefinition)
-
                 findPluginActionParameters(method)
                     .forEach { (parameter, _) ->
-                        deployActionParameterDefinition(
+                        saveActionParameterDefinition(
                             PluginActionPropertyDefinition(
                                 PluginActionPropertyDefinitionId(
                                     actionDefinition.id,
@@ -185,7 +204,7 @@ open class PluginDeploymentListener(
         return pluginDefinitionResolver.findPluginClasses()
     }
 
-    private fun deployPluginDefinition(pluginDefinition: PluginDefinition): PluginDefinition {
+    private fun savePluginDefinition(pluginDefinition: PluginDefinition): PluginDefinition {
         logger.info { "Deploying plugin ${pluginDefinition.key}" }
         logger.debug { "$pluginDefinition" }
         return pluginDefinitionRepository.save(pluginDefinition)
@@ -209,12 +228,12 @@ open class PluginDeploymentListener(
         }.associateWith { parameter -> parameter.getAnnotation(PluginActionProperty::class.java) }
     }
 
-    private fun deployActionDefinition(pluginActionDefinition: PluginActionDefinition): PluginActionDefinition {
+    private fun saveActionDefinition(pluginActionDefinition: PluginActionDefinition): PluginActionDefinition {
         logger.debug { "Deploying action ${pluginActionDefinition.id.key} for plugin ${pluginActionDefinition.id.pluginDefinition.key}" }
         return pluginActionDefinitionRepository.save(pluginActionDefinition)
     }
 
-    private fun deployActionParameterDefinition(propertyDefinition: PluginActionPropertyDefinition) {
+    private fun saveActionParameterDefinition(propertyDefinition: PluginActionPropertyDefinition) {
         logger.debug { "Deploying action property ${propertyDefinition.id.key} for action ${propertyDefinition.id.pluginActionDefinitionId.key} on plugin ${propertyDefinition.id.pluginActionDefinitionId.pluginDefinition.key}" }
         pluginActionPropertyDefinitionRepository.save(propertyDefinition)
     }
