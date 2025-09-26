@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,6 +39,10 @@ export class PluginService {
 
   get pluginSpecifications(): Array<PluginSpecification> {
     return this._pluginSpecifications$.getValue();
+  }
+
+  addPluginSpecification(pluginSpecification: PluginSpecification) {
+    this._pluginSpecifications$.next([...this.pluginSpecifications, pluginSpecification]);
   }
 
   get availablePluginIds$(): Observable<Array<string>> {

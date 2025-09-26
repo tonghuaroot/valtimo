@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,9 @@
  */
 
 import {AfterViewInit, Component, ElementRef, OnDestroy, Renderer2, ViewChild} from '@angular/core';
-import {LayoutService} from '../../services/layout.service';
+import {LayoutService} from '../../services/layout/layout.service';
 import {ShellService, UserInterfaceService} from '@valtimo/components';
+import {ExtensionService} from '@valtimo/extension-management';
 
 // eslint-disable-next-line no-var
 declare var App;
@@ -25,7 +26,6 @@ declare var App;
   selector: 'valtimo-layout-internal',
   templateUrl: './layout-internal.component.html',
   styleUrls: ['./layout-internal.component.scss'],
-  standalone: false,
 })
 export class LayoutInternalComponent implements AfterViewInit, OnDestroy {
   @ViewChild('mainContent') mainContentRef: ElementRef;
@@ -40,9 +40,11 @@ export class LayoutInternalComponent implements AfterViewInit, OnDestroy {
     public layoutService: LayoutService,
     private readonly renderer: Renderer2,
     private readonly userInterfaceService: UserInterfaceService,
-    private readonly shellService: ShellService
+    private readonly shellService: ShellService,
+    extensionService: ExtensionService
   ) {
     this.renderer.addClass(document.body, 'be-animate');
+    extensionService.loadAll();
   }
 
   public ngAfterViewInit(): void {
