@@ -139,6 +139,35 @@ your environment.
 
 <figure><img src="./images/building-block-input-output-mapping.png" alt=""><figcaption><p>Input and output mapping</p></figcaption></figure>
 
+#### How data reaches the building block
+
+A building block runs in its own isolated context. Values mapped as inputs are written to the **building block
+document** when the building block starts; they never become process variables of the building block process.
+Inside the building block, always reference them with the `doc:` prefix (for example `doc:/attachmentIds`).
+A `pv:` reference inside a building block only resolves process variables that the building block process sets
+itself — a `pv:` reference to caller data resolves to `null`.
+
+The call activity must propagate the building block document id as the business key of the called process:
+`<camunda:in businessKey="#{buildingBlockDocumentId}" />`. Everything inside the building block resolves its
+context through this business key. The mapping is validated when the building block link is saved or updated,
+and again when the call activity starts; a clear error is raised when the mapping is missing, maps a different
+expression, or is shadowed. Beware of mixing `operaton:` and `camunda:` extension elements on the same call
+activity (a common leftover of a Camunda-to-Operaton migration): the engine ignores all `camunda:` elements as
+soon as one `operaton:` element of the same type is present, so a correct `camunda:in` next to any
+`operaton:in` is dead configuration.
+
+#### Passing files and attachments
+
+Files are passed to a building block *by reference*, using the resource id of the file in the temporary resource
+storage. The temporary resource storage is not bound to a case, so a resource id remains usable inside any
+building block. For example, to send generated documents as email attachments from a building block:
+
+1. In the case process, generate the document (for example with the SmartDocuments plugin). The generated file is
+   stored in the temporary resource storage and its resource id is written to a process variable.
+2. Give the building block a field for the attachment list (for example `attachmentIds`, type array) and map the
+   process variable to it as an input.
+3. In the mail action inside the building block, reference the field as `doc:/attachmentIds`.
+
 ### 5. Save and deploy
 
 * Click **Complete** to save the process link.
