@@ -4,6 +4,19 @@
 **Release date 05-08-2026**
 {% endhint %}
 
+## New Features
+
+* **New widget type: Text**
+
+  A new **Text** widget is available on case widget tabs. It shows a fixed explanatory text — for example a
+  work instruction, or a short introduction to the widgets around it — instead of data from the case. The
+  content is authored in markdown (headings, lists, bold/italic, links, code, quotes and tables) and is part of
+  the widget configuration, so it is the same for every case of that case definition. A title, an icon, an
+  accent color, a width and an optional action button can be configured like on the other widgets. Links in the
+  content open in a new tab, and the rendered content is sanitized so unsafe HTML and link schemes are removed.
+  See the [widget documentation](../../../features/case/case-detail/tabs/widgets.md) for the configuration
+  details.
+
 ## Enhancements
 
 * **Zaaktype dropdown now shows the begin and end date**
@@ -20,6 +33,27 @@
 
 ## Bugfixes
 
+* **Case definition name entered when creating a draft version is now saved**
+
+  The *Case definition name* filled in when creating a draft version based on an existing version is now saved on
+  the new draft. Previously it was discarded and the draft kept the name of the version it was based on.
+
+* **Case management screens now show the name of the selected version**
+
+  The page title and breadcrumb now show the case definition name of the version you have selected. Previously the
+  title used the title from the document definition and the breadcrumb the name of the globally active version, so a
+  changed name was not visible. The breadcrumb also no longer stays behind after leaving version management.
+
+* **Case menu and version indicator now update when a version is made globally active**
+
+  Making a version globally active now updates the case menu and the *set as globally active* action immediately.
+  Previously the menu kept showing the previously active version and its name until the page was reloaded.
+
+* **Expanded menu groups stay open when the menu refreshes**
+
+  An expanded menu group such as *Cases* now stays open when the menu refreshes its contents, for example after
+  uploading a case definition. Previously the group collapsed.
+  
 * **Case list and task list no longer freeze the browser tab in certain browser versions**
 
   Opening a case list or the task list could freeze the browser tab completely in certain
