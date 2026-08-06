@@ -103,9 +103,9 @@ class FormFlowProcessLinkActivityHandler(
                 repositoryService.findProcessDefinitionById(processDefinitionId)!!
             }
 
-            val additionalProperties = mutableMapOf<String, Any>("processDefinitionKey" to processDefinition.key)
-            documentId?.let { additionalProperties["documentId"] = it }
-            documentDefinitionName?.let { additionalProperties["documentDefinitionName"] = it }
+            val additionalProperties = mutableMapOf<String, Any>(PROCESS_DEFINITION_KEY to processDefinition.key)
+            documentId?.let { additionalProperties[DOCUMENT_ID] = it }
+            documentDefinitionName?.let { additionalProperties[DOCUMENT_DEFINITION_NAME] = it }
 
             ProcessLinkActivityResult(
                 processLink.id,
