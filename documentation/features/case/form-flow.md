@@ -12,44 +12,36 @@ For information on how to link a form flow definition to a task, see the [form f
 
 {% tabs %}
 {% tab title="Via UI" %}
-<figure><img src="../../.gitbook/assets/image.png" alt=""><figcaption></figcaption></figure>
-
 * Go to the `Admin` menu.
 * Go to the `Cases` menu and select the case to configure form flows for.
-* Select the `Form Flows` tab
+* Select the `Form Flows` tab.
 
-Form flows can be added to draft case definitions via the **Add new form flow** button. A modal will be shown where the form flow key can be set and the form flow can be created.
+Form flows can be added to draft case definitions via the **Create new form flow** button. A modal will be shown where the form flow key can be set and the form flow can be created.
 
-<figure><img src="../../.gitbook/assets/image (4).png" alt=""><figcaption></figcaption></figure>
+After creating a form flow, it opens in the form flow editor. The editor has two tabs that work on the same definition: a visual **Editor** and a **JSON editor**.
 
-After creating a form flow, the contents of it can be edited. The steps and different step types are described below.&#x20;
+**The visual editor**
 
-<figure><img src="../../.gitbook/assets/image (5).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="images/form-flow-editor.png" alt=""><figcaption></figcaption></figure>
 
-Add each individual step to the form flow definition, e.g.:
+The left panel lists the steps of the flow; **Add step** adds a new one. Selecting a step shows its configuration on the right:
 
-```
-{
-    "key": "my-form-flow",
-    "startStep": "personalDetailsStep",
-    "steps": [
-        {
-            "key": "personalDetailsStep"
-        },
-        {
-            "key": "loanApprovedStep"
-        },
-        {
-            "key": "loanDeniedStep"
-        },
-        {
-            "key": "summaryStep"
-        }
-    ]
-}
-```
+* **Step details.** The key identifies the step; renaming it automatically updates the start step and every transition that references it. The optional title is shown in the [breadcrumb trail](form-flow.md#bread-crumbs). The type determines what the step shows: for a `form` step, the **Form** dropdown lists the forms of this case definition; for a `custom-component` step, the **Component ID** dropdown lists the custom components registered by the implementation. See the [step types section](form-flow.md#step-types) for more information.
+* **Start step.** The step where the form flow begins carries a *Start step* tag. Any other step can be made the start step with the **Make start step** button.
+* **Navigation.** Transitions define where the user can go after completing the step. Each transition points to another step and can have a SpEL condition. Transitions are evaluated from top to bottom — the first one whose condition holds is taken, and a transition without a condition is the default. The order can be changed with the arrow buttons.
+* **Actions.** Expressions that run when the step opens, when it is completed, or when the user navigates back. The **Add action** menu lists the registered form flow functions with their parameters, next to the option to write a blank expression. See the [expressions section](form-flow.md#expressions) for more information.
 
-More details can be found in the **Via IDE** tab.
+<figure><img src="images/form-flow-editor-actions.png" alt=""><figcaption></figcaption></figure>
+
+The **How do expressions work?** button opens a help dialog explaining conditions and actions, including exactly which data is available in `additionalProperties` for this application.
+
+<figure><img src="images/form-flow-editor-help.png" alt=""><figcaption></figcaption></figure>
+
+The editor validates the definition while editing — duplicate step keys, a missing start step, transitions to unknown steps, and multiple default transitions are reported — and warns when leaving the page with unsaved changes.
+
+**The JSON editor**
+
+The **JSON editor** tab shows the definition as JSON with schema-based validation and autocompletion. This is useful for copying definitions between environments or for editing properties in bulk. The JSON format is described in the **Via IDE** tab.
 {% endtab %}
 
 {% tab title="Via IDE" %}

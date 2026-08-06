@@ -5,6 +5,11 @@ are scoped to a specific building block version and can be used in user tasks wi
 
 ## Managing form flows
 
+Form flows of a building block are edited in the same form flow editor as case form flows, with a visual
+**Editor** tab and a **JSON editor** tab. The **Form** dropdown of a step lists the forms of the building
+block. See the [form flow editor documentation](../case/form-flow.md#creating-a-form-flow-definition) for how
+to configure steps, transitions and actions.
+
 ### Creating a form flow
 
 * Open a building block definition.
