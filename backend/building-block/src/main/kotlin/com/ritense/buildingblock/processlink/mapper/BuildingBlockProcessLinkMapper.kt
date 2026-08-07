@@ -296,18 +296,14 @@ class BuildingBlockProcessLinkMapper(
             .map { it.getPrefixedTarget() }
             .filter { !it.startsWith(DOC_TARGET_PREFIX) }
         require(invalidInputTargets.isEmpty()) {
-            "Input mapping targets must be building block fields. A value passed to a building block is " +
-                "stored in the building block document and can be referenced inside the building block " +
-                "with 'doc:'. Invalid targets: ${invalidInputTargets.joinToString()}"
+            "Input mapping targets must be 'doc:' building block fields. Invalid: ${invalidInputTargets.joinToString()}"
         }
 
         val invalidOutputSources = outputMappings
             .map { it.getPrefixedSource() }
             .filter { !it.startsWith(DOC_TARGET_PREFIX) }
         require(invalidOutputSources.isEmpty()) {
-            "Output mapping sources must be building block fields. When a building block completes, only " +
-                "its document can still be read; its process variables no longer exist. " +
-                "Invalid sources: ${invalidOutputSources.joinToString()}"
+            "Output mapping sources must be 'doc:' building block fields. Invalid: ${invalidOutputSources.joinToString()}"
         }
     }
 

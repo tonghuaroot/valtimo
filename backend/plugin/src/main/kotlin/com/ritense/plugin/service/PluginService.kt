@@ -705,6 +705,9 @@ class PluginService(
      * it, so misconfigured references are diagnosable. A common cause is referencing a process
      * variable (pv:) inside a building block: values passed to a building block only exist in the
      * building block document (doc:), never as process variables.
+     *
+     * Logged at debug: null can be a perfectly valid value for an optional property, so this must
+     * not add noise to operational logs.
      */
     private fun logUnresolvedActionProperties(
         resolvedValueMap: Map<String, Any?>,
@@ -716,7 +719,7 @@ class PluginService(
         if (unresolvedKeys.isEmpty()) {
             return
         }
-        logger.warn {
+        logger.debug {
             "Plugin action '${method.name}' on activity '$activityId' of process definition " +
                 "'$processDefinitionId': property value(s) ${unresolvedKeys.joinToString { "'$it'" }} " +
                 "resolved to null and will be passed to the action as null."
