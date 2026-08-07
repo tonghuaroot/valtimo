@@ -12,9 +12,24 @@
 
 ## Enhancements
 
-* **New enhancement title**
+* **Building block call activities are now validated**
 
-  New enhancement explanation.
+  The configuration of a building block call activity is checked when the building block link is saved and when the
+  call activity starts. Mistakes that previously made a building block silently work on the wrong case data now fail
+  with a message that explains how to fix them. See the
+  [building block documentation](../../../features/building-blocks/README.md) for the call activity requirements.
+
+* **Clearer rules for building block input and output mappings**
+
+  Values passed to a building block are stored in its document, and results are read back from it. Mappings that do
+  not follow this are now rejected with a clear message when the building block link is saved, instead of being
+  silently ignored at runtime. How data flows in and out of a building block is described in the
+  [building block documentation](../../../features/building-blocks/README.md).
+
+* **Better diagnostics for plugin actions**
+
+  When a plugin action property resolves to no value, a debug log entry now names the property, the activity and the
+  process definition, making it easier to trace why an action behaves as if a value was never provided.
 
 ## Bugfixes
 
