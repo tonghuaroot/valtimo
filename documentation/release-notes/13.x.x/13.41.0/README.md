@@ -6,34 +6,71 @@
 
 ## New Features
 
-* **Visual form flow editor**
+* **Send a message to a case and its building blocks**
 
-  Form flows can now be built in a visual editor instead of writing JSON by hand. The editor opens on a new
-  **Editor** tab when a form flow is opened in case management or building block management; the existing JSON
-  editor remains available on a separate **JSON editor** tab, and both work on the same definition.
+  Processes can now send a message to a whole case: the case's own processes and all of its building blocks receive
+  it. This makes it possible to let a building block react to something that happens elsewhere in the case, and to let
+  building blocks signal each other. Messages can also be sent to another case, for example a related one. The new
+  methods sit on the existing `correlationService`, next to the other correlation methods — see
+  [correlating messages](../../../features/process/correlation-service.md#correlating-to-a-whole-case-including-its-building-blocks).
 
-  The visual editor shows the steps of the flow in a sidebar and the configuration of the selected step next to
-  it. Per step, the key, title and step type can be set, and the type-specific configuration is offered as a
-  choice: the **Form** dropdown lists the forms of the surrounding case definition or building block, and the
-  **Component ID** dropdown lists the custom components registered by the implementation (the
-  `custom-component` type is unavailable when none are registered). Any step can be marked as the start step,
-  and renaming a step key automatically updates the start step and every transition that referenced it.
+* **Start a building block with a message**
 
-  Transitions to next steps are configured per step, including their SpEL conditions and evaluation order.
-  Actions that run when a step opens, completes, or when the user navigates back can be added from a menu that
-  lists the registered form flow functions — such as `valtimoFormFlow.completeTask` — with their parameters.
-  Inline help explains how conditions and actions work, and a help dialog documents exactly which data is
-  available in `additionalProperties`, based on what the application provides.
+  A building block can now be started by sending a message to the case, instead of only from a call activity or from
+  the case's **Start** menu. See
+  [Start a building block by message](../../../features/building-blocks/README.md#start-a-building-block-by-message).
 
-  The editor validates the definition while editing (duplicate step keys, missing start step, transitions to
-  unknown steps, at most one default transition) and warns when leaving the page with unsaved changes. See the
-  [form flow documentation](../../../features/case/form-flow.md#creating-a-form-flow-definition) for details.
+
+## Enhancements
+
+* **Searchable dropdowns on the process migration screen**
+
+  The *Source Definition*, *Source Version*, *Target Definition*, *Target Version* and *Choose Target*
+  dropdowns on the *Process migration* screen are now combo boxes, so typing in the field filters the
+  available entries. This makes it easier to find a process in an environment with many process
+  definitions. Selecting a source definition now also preselects the same definition as target, and
+  clearing the source definition clears the source version, target definition and target version as
+  well, so no stale selection is left behind.
+
+* **Searchable process dropdown on the Progress tab**
+
+  The process dropdown on the *Progress* tab of a case is now a combo box. Typing in the field filters
+  the processes linked to the case, instead of having to scroll through the full list.
 
 ## Bugfixes
 
-* **Changing the form flow of an existing form flow process link is now saved**
+* **Actions now respect the linked building block version**
 
-  When editing an existing form flow process link and selecting a different form flow definition, the change
-  was silently ignored on save: the process link kept its previous form flow. Changes to the display type and
-  size were saved correctly, which made this easy to miss. Selecting a different form flow definition is now
-  saved as expected.
+  Starting a building block from the actions of a case now always runs the version of that building block
+  that is linked to the case. Previously a newer version of the same building block took over: after
+  creating a new version and changing its process, starting the action still ran the newer version, which
+  led to an error when that version wrote to fields the linked version does not have. Changes to other
+  versions of a building block no longer affect the version that is linked.
+
+  A process that belongs to a building block can now only be started for a specific version. Starting one
+  by process definition key alone - for example from a custom plugin or a `startProcessByProcessDefinitionKey`
+  expression outside of a building block - now reports a clear error instead of silently running whichever
+  version happened to be deployed last.
+
+* **A divider widget without a title no longer shows a dash**
+
+  A divider widget that is configured without a title now stays empty, both in the widget list on the
+  widget management page and on the widget tab of a case. Previously a `-` was shown in both places as a
+  placeholder for the missing title. In addition, saving a divider without a title on an IKO view no longer
+  fails: the back end required a non-blank title for every widget, while a divider does not need one.
+
+* **A divider widget can be duplicated again**
+
+  Fixed an issue where duplicating a divider opened the duplication dialog with an empty, invalid key that 
+  could not be edited, leaving the Duplicate button disabled. The dialog now pre-populates the divider key 
+  with a unique default value and allows it to be edited before duplicating.
+
+* **Start form of a building block now opens in the panel**
+
+  Starting a building block from the 'Start' menu of a case did nothing when the start form of its
+  main process is configured to be shown in a panel. The panel now opens right away. Previously it
+  only appeared after first opening the start form of a regular process in the panel.
+
+* **Exporting case definitions**
+
+  Case definitions that had a process definition removed via the database were unable to be exported.
