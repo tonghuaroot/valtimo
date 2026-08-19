@@ -4,12 +4,6 @@
 **Release date 19-08-2026**
 {% endhint %}
 
-## New Features
-
-* **New feature title**
-
-  New feature explanation.
-
 ## Enhancements
 
 * **Dashboard case widgets only count cases you are allowed to see**
