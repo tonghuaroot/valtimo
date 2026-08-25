@@ -43,6 +43,8 @@ import com.ritense.processdocument.repository.OperatonProcessDefinitionCaseDefin
 import com.ritense.processdocument.repository.ProcessDefinitionCaseDefinitionRepository
 import com.ritense.processdocument.repository.ProcessDocumentInstanceRepository
 import com.ritense.processdocument.repository.TaskQuickSearchRepository
+import com.ritense.processdocument.service.CaseCorrelationBusinessKeyProvider
+import com.ritense.processdocument.service.CaseCorrelationStartTargetProvider
 import com.ritense.processdocument.service.CaseDefinitionProcessLinkService
 import com.ritense.processdocument.service.CaseTaskListSearchService
 import com.ritense.processdocument.service.CorrelationService
@@ -97,7 +99,7 @@ import org.springframework.core.annotation.Order
 @AutoConfiguration
 class ProcessDocumentsAutoConfiguration {
 
-    @ProcessBean
+    @ProcessBean(description = "Case document operations (deprecated, use documentDelegateService)")
     @Bean
     @ConditionalOnMissingBean(DocumentDelegate::class)
     fun documentDelegate(
@@ -112,7 +114,7 @@ class ProcessDocumentsAutoConfiguration {
         )
     }
 
-    @ProcessBean
+    @ProcessBean(description = "Resolves and sets values using value resolver keys")
     @Bean
     @ConditionalOnMissingBean
     fun valueResolverDelegateService(
@@ -123,7 +125,7 @@ class ProcessDocumentsAutoConfiguration {
         )
     }
 
-    @ProcessBean
+    @ProcessBean(description = "Case document metadata, assignments, tags, and status")
     @Bean
     @ConditionalOnMissingBean(DocumentDelegateService::class)
     fun documentDelegateService(
@@ -142,7 +144,7 @@ class ProcessDocumentsAutoConfiguration {
         )
     }
 
-    @ProcessBean
+    @ProcessBean(description = "Sends messages to start or catch events in processes")
     @Bean
     @ConditionalOnMissingBean(CorrelationService::class)
     fun correlationService(
@@ -153,6 +155,9 @@ class ProcessDocumentsAutoConfiguration {
         operatonProcessService: OperatonProcessService,
         repositoryService: RepositoryService,
         operatonRepositoryService: OperatonRepositoryService,
+        caseDocumentResolver: CaseDocumentResolver,
+        caseCorrelationBusinessKeyProviders: List<CaseCorrelationBusinessKeyProvider>,
+        caseCorrelationStartTargetProviders: List<CaseCorrelationStartTargetProvider>,
     ): CorrelationService {
         return CorrelationServiceImpl(
             runtimeService = runtimeService,
@@ -160,11 +165,14 @@ class ProcessDocumentsAutoConfiguration {
             documentService = documentService,
             operatonRepositoryService = operatonRepositoryService,
             repositoryService = repositoryService,
-            associationService = processDocumentAssociationService
+            associationService = processDocumentAssociationService,
+            caseDocumentResolver = caseDocumentResolver,
+            businessKeyProviders = caseCorrelationBusinessKeyProviders,
+            startTargetProviders = caseCorrelationStartTargetProviders,
         )
     }
 
-    @ProcessBean
+    @ProcessBean(description = "Starts processes and manages process-document associations")
     @Bean("processService")
     @ConditionalOnMissingBean(ProcessDocumentsService::class)
     fun processDocumentsService(
