@@ -1,6 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
-// Generated using typescript-generator version 3.2.1263 on 2026-08-04 15:02:17.
+// Generated using typescript-generator version 3.2.1263 on 2026-08-26 15:15:30.
 
 export interface AccentColorsDto {
     colors: { [index: string]: string };
@@ -977,6 +977,15 @@ export interface CaseProcessDefinitionResponseDto {
     processLinks: ProcessLinkResponseDto[];
     bpmn20Xml: string;
     draft: boolean;
+    autofilledElements: AutofilledElementDto[];
+}
+
+export interface MissingReferenceDto {
+    type: MissingReferenceType;
+    reference: string;
+    activityId: string | null;
+    processDefinitionKey: string | null;
+    blocksImport: boolean;
 }
 
 export interface ProcessDefinitionConflictResponseDto {
@@ -985,16 +994,33 @@ export interface ProcessDefinitionConflictResponseDto {
     processDefinitionName: string | null;
 }
 
+export interface ProcessDefinitionImportPreviewResponseDto {
+    processDefinitionKeys: string[];
+    existingProcessDefinitionKeys: string[];
+    pluginConfigurations: ProcessLinkPluginConfigurationPreviewDto[];
+    missingReferences: MissingReferenceDto[];
+    elementsToReplace: ReplacedElementDto[];
+    canImport: boolean;
+}
+
+export interface ProcessDefinitionImportResponseDto {
+    processDefinitionKeys: string[];
+    missingReferences: MissingReferenceDto[];
+}
+
 export interface ProcessDefinitionResponseDto {
     processDefinition: ProcessDefinitionWithPropertiesDto;
     processLinks: ProcessLinkResponseDto[];
     bpmn20Xml: string;
     draft: boolean;
+    autofilledElements: AutofilledElementDto[];
 }
 
 export interface ProcessDefinitionValidateRequestDto {
     bpmnXml: string;
     processLinks: ProcessLinkCreateRequestDto[];
+    canInitializeDocument: boolean;
+    startableByUser: boolean;
 }
 
 export interface ProcessDefinitionValidateResponseDto {
@@ -1029,6 +1055,15 @@ export interface ProcessLinkExportResponseDto {
     processLinkType: string;
 }
 
+export interface ProcessLinkPluginConfigurationPreviewDto {
+    pluginConfigurationId: string;
+    pluginDefinitionKey: string | null;
+    pluginActionDefinitionKey: string;
+    processDefinitionKey: string;
+    activityId: string;
+    existsInTargetEnvironment: boolean;
+}
+
 export interface ProcessLinkResponseDto {
     activityId: string;
     processDefinitionId: string;
@@ -1040,6 +1075,11 @@ export interface ProcessLinkResponseDto {
 export interface ProcessLinkUpdateRequestDto {
     processLinkType: string;
     id: string;
+}
+
+export interface ReplacedElementDto {
+    type: ReplacedElementType;
+    key: string;
 }
 
 export interface SearchFieldV2Dto {
@@ -1099,6 +1139,12 @@ export interface TeamUserResponseDto {
     username: string;
     fullName: string | null;
     email: string | null;
+}
+
+export interface AutofilledElementDto {
+    activityId: string;
+    modificationType: string;
+    appliedValue: string;
 }
 
 export interface BatchAssignTaskDTO {
@@ -1224,6 +1270,7 @@ export interface ProcessDefinitionDiagramWithPropertyDto {
     bpmn20Xml: string;
     readOnly: boolean;
     systemProcess: boolean;
+    autofilledElements: AutofilledElementDto[];
 }
 
 export interface ProcessDefinitionWithPropertiesDto extends ProcessDefinitionDto {
@@ -1329,11 +1376,11 @@ export interface UpdateTemplateRequest {
 
 export interface WidgetDto {
     type: string;
-    color: WidgetColor | null;
-    width: number;
+    title: string;
     icon: string | null;
     compact: boolean | null;
-    title: string;
+    width: number;
+    color: WidgetColor | null;
     highContrast: boolean;
     displayConditions: Condition<any>[] | null;
     key: string;
@@ -1480,10 +1527,10 @@ export interface DocumentRelation {
 }
 
 export interface RelatedFile {
-    createdBy: string;
-    createdOn: DateAsString;
-    sizeInBytes: number;
     fileId: string;
+    createdOn: DateAsString;
+    createdBy: string;
+    sizeInBytes: number;
     fileName: string;
 }
 
@@ -1529,6 +1576,10 @@ export interface ProcessDefinitionValidationError {
     errorCode: string | null;
     expression: string | null;
     severity: ValidationSeverity;
+    invalidFields: string[] | null;
+    invalidArguments: number[] | null;
+    listenerType: string | null;
+    listenerIndex: number | null;
 }
 
 export interface TaskInstanceWithIdentityLink {
@@ -1598,9 +1649,9 @@ export interface OperatonTaskDto {
 }
 
 export interface FormField {
+    businessKey: boolean;
     validationConstraints: FormFieldValidationConstraint[];
     label: string;
-    businessKey: boolean;
     value: TypedValue;
     typeName: string;
     properties: { [index: string]: string };
@@ -1631,22 +1682,22 @@ export interface ProcessDefinitionDto {
 
 export interface HistoricActivityInstance {
     rootProcessInstanceId: string;
+    processDefinitionKey: string;
+    canceled: boolean;
+    removalTime: DateAsString;
     parentActivityInstanceId: string;
     calledProcessInstanceId: string;
     calledCaseInstanceId: string;
-    processDefinitionKey: string;
+    activityId: string;
+    tenantId: string;
+    executionId: string;
+    assignee: string;
     taskId: string;
     startTime: DateAsString;
     endTime: DateAsString;
-    activityId: string;
-    executionId: string;
-    processInstanceId: string;
     processDefinitionId: string;
+    processInstanceId: string;
     activityType: string;
-    assignee: string;
-    tenantId: string;
-    canceled: boolean;
-    removalTime: DateAsString;
     activityName: string;
     durationInMillis: number;
     completeScope: boolean;
@@ -1796,6 +1847,10 @@ export type DateAsString = string;
 export type StartableItemType = "PROCESS" | "BUILDING_BLOCK";
 
 export type JobType = "TIMER" | "ASYNC_CONTINUATION" | "MESSAGE" | "BATCH" | "OTHER";
+
+export type MissingReferenceType = "SUB_PROCESS" | "DECISION_DEFINITION" | "FORM" | "FORM_FLOW" | "READ_ONLY_SYSTEM_PROCESS";
+
+export type ReplacedElementType = "PROCESS_DEFINITION" | "DECISION_DEFINITION" | "FORM";
 
 export type ProcessVariableType = "STRING" | "INTEGER" | "LONG" | "DOUBLE" | "BOOLEAN" | "JSON";
 
