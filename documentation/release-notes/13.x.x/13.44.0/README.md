@@ -32,4 +32,5 @@ New enhancement explanation.
 | Area | Fix |
 |------|-----|
 | Cases | The process selector on the Progress tab shows long process names in full instead of cutting them off |
+| Plugins | Required fields such as the authentication configuration have to be filled in before a plugin configuration can be saved |
 | Process links | Changing the form flow definition on an existing form flow process link is now saved (previously the change was silently ignored). |
