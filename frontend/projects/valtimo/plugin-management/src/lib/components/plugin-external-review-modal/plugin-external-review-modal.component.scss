@@ -14,5 +14,7 @@
  * limitations under the License.
  */
 
-export * from './plugin-app-add-modal.test-ids';
-export * from './plugin-external-review-modal.test-ids';
+.plugin-external-review-modal__notification {
+  display: block;
+  margin-bottom: 1rem;
+}

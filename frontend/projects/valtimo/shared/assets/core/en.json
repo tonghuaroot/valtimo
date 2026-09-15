@@ -2605,6 +2605,12 @@
       "permissionsChanged": "The plugin package on the host changed and now requests different permissions than the ones that were accepted. Nothing is sent to the host until an administrator reviews and accepts the new permissions.",
       "codeChanged": "The plugin package on the host changed. It requests the same permissions as before, but the code is not the one that was accepted. Nothing is sent to the host until an administrator confirms the new package."
     },
+    "review": {
+      "menuItem": "Review changes",
+      "modalTitle": "Review changed app",
+      "accept": "Accept changes",
+      "failed": "Accepting the changes failed"
+    },
     "awaitingHost": {
       "modalTitle": "Plugin host not available yet",
       "modalMessage": "This configuration was created from a deployment descriptor, but its plugin host has not served the plugin yet — so its settings and permissions are not known and cannot be edited. It becomes editable automatically once the host is available. You can still delete it.",

@@ -14,5 +14,7 @@
  * limitations under the License.
  */
 
-export * from './plugin-app-add-modal.test-ids';
-export * from './plugin-external-review-modal.test-ids';
+export const PLUGIN_EXTERNAL_REVIEW_MODAL_TEST_IDS = {
+  cancelButton: 'pluginExternalReviewModalCancelButton',
+  acceptButton: 'pluginExternalReviewModalAcceptButton',
+} as const;
