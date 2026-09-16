@@ -1063,13 +1063,15 @@
     "actions": {
       "columns": {
         "name": "Naam",
-        "type": "Type"
+        "type": "Type",
+        "startableByUser": "Zichtbaarheid"
       },
+      "visibleInStartMenu": "Zichtbaar in startmenu",
       "addItem": "Actie aanmaken",
       "noResults": "Geen acties geconfigureerd",
       "noResultsDescription": "Er zijn geen acties geconfigureerd voor dit dossiertype.",
       "infoNotification": {
-        "message": "Acties verschijnen onder de startknop van een bestaand dossier en kunnen op elk moment door de gebruiker gestart worden."
+        "message": "Acties verschijnen standaard onder de startknop van een bestaand dossier en kunnen op elk moment door de gebruiker gestart worden."
       },
       "type": {
         "PROCESS": "Proces",

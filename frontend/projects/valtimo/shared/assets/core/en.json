@@ -1056,13 +1056,15 @@
     "actions": {
       "columns": {
         "name": "Name",
-        "type": "Type"
+        "type": "Type",
+        "startableByUser": "Visibility"
       },
+      "visibleInStartMenu": "Visible in start menu",
       "addItem": "Create an action",
       "noResults": "No actions configured",
       "noResultsDescription": "No actions are configured for this case type.",
       "infoNotification": {
-        "message": "Actions appear under the start button of an existing case and can be initiated at any time by the user."
+        "message": "Actions appear under the start button of an existing case by default and can be initiated at any time by the user."
       },
       "type": {
         "PROCESS": "Process",
