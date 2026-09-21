@@ -94,6 +94,10 @@ export const envSchema = z.object({
   // this before the file is buffered for the HMAC check.
   UPLOAD_MAX_BYTES: z.coerce.number().int().positive().default(100 * 1024 * 1024),
 
+  // Bounds what a package expands to; UPLOAD_MAX_BYTES bounds only the compressed zip. adm-zip
+  // stops at each entry's declared size, but a small zip can declare gigabytes.
+  PLUGIN_MAX_UNCOMPRESSED_BYTES: z.coerce.number().int().positive().default(256 * 1024 * 1024),
+
   // Per-configuration rate limit for the public /plugins/:id/:version/data route (requests per
   // minute per configurationId). 0 disables the limit.
   DATA_RATE_LIMIT_PER_MINUTE: z.coerce.number().int().min(0).default(120),

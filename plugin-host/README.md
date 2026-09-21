@@ -164,10 +164,14 @@ curl -X POST http://localhost:8090/plugins/case-summary/0.1.0/actions/case-summa
 
 ```bash
 cd app
-ADMIN_TOKEN=your-secret npm run docker:up
+ADMIN_TOKEN=dev-only-insecure-secret npm run docker:up
 ```
 
 This starts both PostgreSQL and the Plugin Host. Plugin binaries persist to a Docker volume.
+
+`dev-only-insecure-secret` is also what GZAC's dev configuration registers with, so the two ends
+match with no extra step. Outside development, pass your own of at least 16 characters — the host
+refuses to start below that — and register the host in GZAC with the same value.
 
 The image compiles itself — no local `npm run build` first. Its build context is this directory
 (`plugin-host/`), not `app/`, because the app depends on the SDK through `file:../plugin-sdk` and

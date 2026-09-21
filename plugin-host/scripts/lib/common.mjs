@@ -36,8 +36,8 @@ export const TEST_FIXTURE_DIR = join(ROOT, "test-fixtures", "test-plugin");
 
 /**
  * Local-development fallback for ADMIN_TOKEN. Published in the docs and shared with GZAC's dev
- * config, so it is public by construction — never use it anywhere real. Length is above the host's
- * own MIN_ADMIN_TOKEN_LENGTH so `npm run dev` boots without an explicit token.
+ * config, so it is public by construction — never use it anywhere real. Must clear the host's
+ * MIN_ADMIN_TOKEN_LENGTH; app/src/models/app-config.test.ts guards that.
  */
 export const DEV_ADMIN_TOKEN = "dev-only-insecure-secret";
 

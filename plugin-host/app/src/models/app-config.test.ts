@@ -14,8 +14,10 @@
  * limitations under the License.
  */
 
+import {readFileSync} from "node:fs";
 import {hostname} from "node:os";
 import {describe, expect, it} from "vitest";
+import {DEV_ADMIN_TOKEN} from "../../../scripts/lib/common.mjs";
 import {MIN_ADMIN_TOKEN_LENGTH, envSchema, migrateEnvSchema} from "./app-config";
 
 /** Shortest token the schema accepts — every unrelated case parses with this. */
@@ -34,6 +36,21 @@ describe("envSchema", () => {
       envSchema.parse({ ADMIN_TOKEN: "a".repeat(MIN_ADMIN_TOKEN_LENGTH - 1) })
     ).toThrow(/at least 16 characters/);
     expect(envSchema.parse({ ADMIN_TOKEN: VALID_TOKEN }).ADMIN_TOKEN).toBe(VALID_TOKEN);
+  });
+
+  it("keeps the sample app's copy of the floor in step", () => {
+    // Two deployables, two copies — held together here instead of drifting.
+    const source = readFileSync(
+      new URL("../../../sample-apps/demo-app/src/config.ts", import.meta.url),
+      "utf8"
+    );
+    const declared = source.match(/MIN_ADMIN_TOKEN_LENGTH\s*=\s*(\d+)/)?.[1];
+    expect(Number(declared)).toBe(MIN_ADMIN_TOKEN_LENGTH);
+  });
+
+  it("accepts the dev launchers' fallback token", () => {
+    // Shortening DEV_ADMIN_TOKEN would otherwise only surface as `npm run dev` dying at boot.
+    expect(envSchema.parse({ ADMIN_TOKEN: DEV_ADMIN_TOKEN }).ADMIN_TOKEN).toBe(DEV_ADMIN_TOKEN);
   });
 
   it("applies defaults when only ADMIN_TOKEN is supplied", () => {
@@ -74,6 +91,7 @@ describe("envSchema", () => {
     expect(defaults.GZAC_API_TIMEOUT_MS).toBe(60_000);
     expect(defaults.USER_TOKEN_INTROSPECTION_TIMEOUT_MS).toBe(10_000);
     expect(defaults.UPLOAD_MAX_BYTES).toBe(100 * 1024 * 1024);
+    expect(defaults.PLUGIN_MAX_UNCOMPRESSED_BYTES).toBe(256 * 1024 * 1024);
     expect(defaults.DATA_RATE_LIMIT_PER_MINUTE).toBe(120);
     expect(defaults.CONFIG_CACHE_TTL_MS).toBe(10_000);
 
@@ -92,6 +110,9 @@ describe("envSchema", () => {
     expect(() => envSchema.parse({ ADMIN_TOKEN: VALID_TOKEN, WASM_TIMEOUT_MS: "0" })).toThrow();
     expect(() => envSchema.parse({ ADMIN_TOKEN: VALID_TOKEN, WASM_TIMEOUT_MS: "abc" })).toThrow();
     expect(() => envSchema.parse({ ADMIN_TOKEN: VALID_TOKEN, UPLOAD_MAX_BYTES: "-1" })).toThrow();
+    expect(() =>
+      envSchema.parse({ ADMIN_TOKEN: VALID_TOKEN, PLUGIN_MAX_UNCOMPRESSED_BYTES: "0" })
+    ).toThrow();
   });
 
   it("defaults the pre-install directory and keeps overwrite off", () => {

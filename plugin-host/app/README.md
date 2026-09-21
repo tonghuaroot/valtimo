@@ -76,8 +76,12 @@ The database starts automatically and the host listens on port 8090.
 For production or isolated testing, run everything in Docker:
 
 ```bash
-ADMIN_TOKEN=my-secret npm run docker:up
+ADMIN_TOKEN=dev-only-insecure-secret npm run docker:up
 ```
+
+`dev-only-insecure-secret` is also what GZAC's dev configuration registers with, so the two ends
+match with no extra step. Outside development, pass your own — see `ADMIN_TOKEN` under
+[Environment Variables](#environment-variables) — and register the host in GZAC with the same value.
 
 The image compiles the SDK and the app itself, so no local build is needed.
 
@@ -107,6 +111,7 @@ Note: When running fully containerized, GZAC must push `eventBroker.amqpUrl` usi
 | `GZAC_API_TIMEOUT_MS` | no | `60000` | Timeout on the `gzac_api` callback fetch into GZAC. |
 | `USER_TOKEN_INTROSPECTION_TIMEOUT_MS` | no | `10000` | Timeout on the user-token introspection call the `/plugins/:id/:version/data` route makes against GZAC before executing Wasm. GZAC not answering within it fails the request with a 503 (fail closed). |
 | `UPLOAD_MAX_BYTES` | no | `104857600` | Maximum plugin package (.zip) upload size (100 MiB), enforced before the file is buffered for the HMAC check. GZAC applies its own 100 MB gate and its servlet multipart limit before forwarding, so raising this alone does not widen the end-to-end limit. |
+| `PLUGIN_MAX_UNCOMPRESSED_BYTES` | no | `268435456` | Maximum total **uncompressed** size of the files extracted from a plugin package (256 MiB). `UPLOAD_MAX_BYTES` bounds the compressed zip; this bounds what it expands to, so a small package declaring gigabytes is refused with a 400 before anything is inflated. Raise it only for genuinely large frontend bundles. |
 | `DATA_RATE_LIMIT_PER_MINUTE` | no | `120` | Per-configuration request budget for the public `/plugins/:id/:version/data` route. `0` disables the limit. |
 | `ADMIN_RATE_LIMIT_PER_MINUTE` | no | `120` | Per-IP request budget for the HMAC-authenticated admin routes (plugin management, configuration pushes, gzac-instance announcements). Far above the one-poll-per-minute legitimate traffic; throttles online brute-force of `ADMIN_TOKEN`. `0` disables the limit. |
 | `BUNDLE_RATE_LIMIT_PER_MINUTE` | no | `600` | Per-IP request budget for the public plugin-content routes (bundles, logos, manifests, frame-policy probes), bounding disk-read abuse. Generous — one case-tab load fetches several assets. `0` disables the limit. |
