@@ -27,6 +27,9 @@ jobs:
       prerelease: ${{ steps.version.outputs.prerelease }}
       npm_tag: ${{ steps.version.outputs.npm_tag }}
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: Validate and extract release branch
         id: version
         run: |
@@ -52,6 +55,27 @@ jobs:
             echo "prerelease=${PRERELEASE}"
             echo "npm_tag=${NPM_TAG}"
           } >> "$GITHUB_OUTPUT"
+
+      # package.json is the release floor. The build job overwrites it with the branch version
+      # anyway, so without this a mistyped branch name could publish below what is already on
+      # npm — and npm never lets a version be taken back. Compares the numeric core only, so
+      # 1.0.0-rc.1 is allowed against a 1.0.0 floor.
+      - name: Refuse a version below the in-repo baseline
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          set -euo pipefail
+          node -e '
+            const fs = require("fs");
+            const baseline = JSON.parse(fs.readFileSync("plugin-host/plugin-sdk/package.json", "utf8")).version;
+            const core = (v) => v.split("-")[0].split(".").map(Number);
+            const [a, b] = [core(process.env.VERSION), core(baseline)];
+            if ((a[0] - b[0] || a[1] - b[1] || a[2] - b[2]) < 0) {
+              console.error(`::error::Refusing to release ${process.env.VERSION}: below the baseline ${baseline} in plugin-host/plugin-sdk/package.json.`);
+              process.exit(1);
+            }
+            console.log(`${process.env.VERSION} is at or above the baseline ${baseline}.`);
+          '
 
   build:
     name: Build, test and pack
