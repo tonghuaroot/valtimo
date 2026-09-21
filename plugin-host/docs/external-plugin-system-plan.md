@@ -2957,7 +2957,7 @@ Schema (`ExternalPluginDeploymentDto`):
     "name": "Local plugin host",
     "kind": "PLUGIN_HOST",
     "baseUrl": "http://localhost:8090",
-    "secret": "${VALTIMO_EXTERNAL_PLUGIN_ADMIN_TOKEN:test-secret}",
+    "secret": "${VALTIMO_EXTERNAL_PLUGIN_ADMIN_TOKEN:dev-only-insecure-secret}",
     "gzacCallbackBaseUrl": "http://host.docker.internal:8080",
     "eventBrokerAmqpUrl": "amqp://guest:guest@gzac-rabbitmq:5672",
     "eventBrokerExchange": "valtimo-events",

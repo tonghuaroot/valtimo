@@ -35,7 +35,9 @@ if (build.status !== 0) process.exit(build.status ?? 1);
 
 const env = {
   ...process.env,
-  ADMIN_TOKEN: process.env.ADMIN_TOKEN || "test-secret",
+  // Dev-only fallback, mirrored in scripts/lib/common.mjs; long enough to clear the app's
+  // MIN_ADMIN_TOKEN_LENGTH.
+  ADMIN_TOKEN: process.env.ADMIN_TOKEN || "dev-only-insecure-secret",
   PATH: `${join(projectRoot, "node_modules", ".bin")}${delimiter}${process.env.PATH ?? ""}`,
 };
 

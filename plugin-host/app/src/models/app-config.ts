@@ -17,9 +17,21 @@
 import { hostname } from "node:os";
 import { z } from "zod";
 
+// Matches the floor Valtimo already applies to `valtimo.plugin.encryption-secret` (16/24/32 bytes
+// for AES). The admin token is the HMAC key behind every GZAC→host call, so a short one is the
+// whole system's weakest link — the admin-route rate limit only slows a brute force, it is not a
+// substitute for entropy.
+export const MIN_ADMIN_TOKEN_LENGTH = 16;
+
 export const envSchema = z.object({
   PORT: z.coerce.number().default(8090),
-  ADMIN_TOKEN: z.string().min(1),
+  ADMIN_TOKEN: z
+    .string()
+    .min(
+      MIN_ADMIN_TOKEN_LENGTH,
+      `ADMIN_TOKEN must be at least ${MIN_ADMIN_TOKEN_LENGTH} characters ` +
+        `(generate one with: openssl rand -hex 32)`
+    ),
   PLUGIN_STORAGE_DIR: z.string().default("./plugins"),
 
   // Directory scanned once at boot for plugin packages (.zip) to install — how an operator ships

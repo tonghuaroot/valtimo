@@ -128,7 +128,7 @@ carries broker credentials and the service token, is also confidential. See
 below, and [Transport security](app/README.md#transport-security) for TLS.
 
 ```bash
-ADMIN_TOKEN=test-secret
+ADMIN_TOKEN=dev-only-insecure-secret
 # host_sign METHOD PATH [BODY_FILE]  →  sets $TS and $SIG
 host_sign() {
   TS="$(date -u +%Y-%m-%dT%H:%M:%SZ)"

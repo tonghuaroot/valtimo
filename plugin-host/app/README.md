@@ -88,7 +88,7 @@ Note: When running fully containerized, GZAC must push `eventBroker.amqpUrl` usi
 
 | Variable | Required | Default | Description |
 |---|---|---|---|
-| `ADMIN_TOKEN` | yes | `changeme` (Docker) | Shared secret used as the HMAC key authenticating every GZAC→host request (see [API Reference](#api-reference)). Rotation is two-sided: restart the host with the new value, then update the secret on the GZAC host via its Edit connection modal — GZAC shows the host unreachable in between and reconnects on the next poll |
+| `ADMIN_TOKEN` | yes | `dev-only-insecure-secret` (Docker) | Shared secret used as the HMAC key authenticating every GZAC→host request (see [API Reference](#api-reference)). **Minimum 16 characters** — the host refuses to start below that; generate one with `openssl rand -hex 32`. Rotation is two-sided: restart the host with the new value, then update the secret on the GZAC host via its Edit connection modal — GZAC shows the host unreachable in between and reconnects on the next poll |
 | `PORT` | no | `8090` | HTTP listen port |
 | `PLUGIN_STORAGE_DIR` | no | `./plugins` (local), `/data/plugins` (Docker) | Directory for persisted plugin binaries |
 | `PLUGIN_PREINSTALL_DIR` | no | `./preinstalled` (local), `/data/preinstalled` (Docker) | Directory scanned once at boot; every `*.zip` in it is installed (see [Pre-installed plugins](#pre-installed-plugins)). Empty in the published image. |
@@ -570,7 +570,7 @@ production GZAC's `ExternalPluginHostClient` signs every call automatically. To 
 hand, sign with this helper (requires `openssl`):
 
 ```bash
-ADMIN_TOKEN=test-secret
+ADMIN_TOKEN=dev-only-insecure-secret
 # host_sign METHOD PATH [BODY_FILE]  →  sets $TS and $SIG for the curl calls below
 host_sign() {
   TS="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
