@@ -326,7 +326,8 @@ class StartableBuildingBlockItemProviderTest {
             buildingBlockDefinitionVersionTag = "2.0.0",
             inputMappings = emptyList(),
             outputMappings = emptyList(),
-            pluginConfigurationMappings = emptyMap()
+            pluginConfigurationMappings = emptyMap(),
+            startableByUser = true
         )
         whenever(linkService.updateLink(eq(caseDefinitionId), eq(buildingBlockDefinitionId), any()))
             .thenReturn(linkDto)
