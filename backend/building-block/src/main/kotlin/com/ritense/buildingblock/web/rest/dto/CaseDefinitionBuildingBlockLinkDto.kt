@@ -59,6 +59,8 @@ data class CreateCaseDefinitionBuildingBlockLinkDto(
 )
 
 data class UpdateCaseDefinitionBuildingBlockLinkDto(
+    val buildingBlockDefinitionKey: String? = null,
+    val buildingBlockDefinitionVersionTag: String? = null,
     val inputMappings: List<BuildingBlockInputMapping> = emptyList(),
     val outputMappings: List<BuildingBlockOutputMapping> = emptyList(),
     val pluginConfigurationMappings: Map<String, UUID> = emptyMap(),
